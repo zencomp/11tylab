@@ -1,0 +1,48 @@
+name: 11ty
+on:
+  push:
+    branches:
+      - master
+      - main
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build: 
+    name: Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Setup pages
+        uses: actions/configure-pages@v5
+
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install packages
+        run: npm ci
+
+      - name: Build documentation
+        run: npm run build
+
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: _site
+
+
+  deploy:
+    name: Deploy
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
